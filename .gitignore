@@ -1,0 +1,17 @@
+# Go
+bin/
+dist/
+*.exe
+*.test
+coverage.out
+
+# Local environment
+.env
+.donagent/
+
+# Editor and OS noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
