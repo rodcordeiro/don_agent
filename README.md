@@ -73,9 +73,9 @@ Included now:
 - local config loading with validation and defaults.
 - event parsing contract and tests.
 - local RabbitMQ service and initial consumer lifecycle.
+- conservative ack/nack handling after event validation and routing.
 
 Not included yet:
 
-- ack/nack processing rules;
 - desktop notifications;
 - GitHub Actions build workflow.
