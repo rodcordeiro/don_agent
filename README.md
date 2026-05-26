@@ -25,6 +25,21 @@ docker compose run --rm dev go test ./...
 docker compose run --rm dev go run ./cmd/donagent
 ```
 
+By default, the agent reads configuration from:
+
+```text
+$HOME/.donagent/config.toml
+```
+
+Use `config.example.toml` as the starting point.
+
+On PowerShell:
+
+```powershell
+New-Item -ItemType Directory -Force $HOME/.donagent
+Copy-Item config.example.toml $HOME/.donagent/config.toml
+```
+
 ## Current scope
 
 The current implementation starts the project scaffold for Milestone 1.
@@ -35,12 +50,11 @@ Included now:
 - Docker-based development environment;
 - initial `cmd/` and `internal/` structure;
 - minimal application entrypoint.
+- local config loading with validation and defaults.
 
 Not included yet:
 
-- configuration file loading;
 - RabbitMQ connection;
 - event parsing;
 - desktop notifications;
 - GitHub Actions build workflow.
-
