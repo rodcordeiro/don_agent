@@ -8,8 +8,18 @@ services:
       - .:/workspace
       - go-cache:/go/pkg/mod
       - go-build-cache:/root/.cache/go-build
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
 
 volumes:
   go-cache:
   go-build-cache:
-

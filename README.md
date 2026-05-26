@@ -25,6 +25,24 @@ docker compose run --rm dev go test ./...
 docker compose run --rm dev go run ./cmd/donagent
 ```
 
+### RabbitMQ local
+
+```powershell
+docker compose up -d rabbitmq
+```
+
+RabbitMQ management UI:
+
+```text
+http://localhost:15672
+```
+
+Default credentials for local development:
+
+```text
+guest / guest
+```
+
 By default, the agent reads configuration from:
 
 ```text
@@ -40,6 +58,8 @@ New-Item -ItemType Directory -Force $HOME/.donagent
 Copy-Item config.example.toml $HOME/.donagent/config.toml
 ```
 
+The example `rabbit_url` uses the Compose service name `rabbitmq`, which is correct when running the agent through Docker Compose. Use `amqp://guest:guest@localhost:5672/` only when running the agent directly on the host.
+
 ## Current scope
 
 The current implementation starts the project scaffold for Milestone 1.
@@ -51,10 +71,11 @@ Included now:
 - initial `cmd/` and `internal/` structure;
 - minimal application entrypoint.
 - local config loading with validation and defaults.
+- event parsing contract and tests.
+- local RabbitMQ service and initial consumer lifecycle.
 
 Not included yet:
 
-- RabbitMQ connection;
-- event parsing;
+- ack/nack processing rules;
 - desktop notifications;
 - GitHub Actions build workflow.

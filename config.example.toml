@@ -1,4 +1,4 @@
-rabbit_url = "amqp://localhost:5672"
+rabbit_url = "amqp://guest:guest@rabbitmq:5672/"
 username = "guest"
 password = "guest"
 queue_name = "donagent.events"
@@ -8,4 +8,3 @@ log_path = "$HOME/.donagent/events.log"
 log_max_size_mb = 10
 tls_enabled = false
 allowed_actions = []
-
