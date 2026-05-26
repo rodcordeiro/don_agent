@@ -74,8 +74,9 @@ Included now:
 - event parsing contract and tests.
 - local RabbitMQ service and initial consumer lifecycle.
 - conservative ack/nack handling after event validation and routing.
+- notification handler behind an internal notifier interface.
 
 Not included yet:
 
-- desktop notifications;
+- native desktop notification library;
 - GitHub Actions build workflow.

@@ -5,7 +5,7 @@
 Organizar o backlog do DonAgent em sprints pequenas, verificáveis e alinhadas aos milestones do produto:
 
 - M1: MVP técnico com Go via Docker, RabbitMQ, eventos, notificações e CI de build.
-- M2: agente residente, tray, ações locais, testes e instalador.
+- M2: agente residente, tray, identidade visual, ações locais, testes e instalador.
 - M3: segurança, auditoria, logging e hardening operacional.
 - M4: versionamento de contrato, auto-update, auto-start e release controlado.
 
@@ -261,7 +261,7 @@ Milestone: M2
 
 Prioridade: P1
 
-Objetivo: transformar o agente em aplicação residente.
+Objetivo: transformar o agente em aplicação residente com identificação visual consistente.
 
 #### Tarefas
 
@@ -269,13 +269,15 @@ Objetivo: transformar o agente em aplicação residente.
 2. Criar pacote `internal/tray`.
 3. Exibir status básico de conexão.
 4. Adicionar ações de pausar, retomar e sair.
-5. Garantir encerramento gracioso pela tray.
+5. Aplicar `assets/logo.png` como ícone do agente na tray/agente instalado.
+6. Garantir encerramento gracioso pela tray.
 
 #### Critérios de aceite
 
 - Agente permanece em segundo plano.
 - Usuário consegue sair pela tray.
 - Pausar/retomar afeta consumo sem matar processo.
+- Tray/agente instalado usam a identidade visual do DonAgent.
 - Diferenças Windows/Linux ficam documentadas.
 
 ### Sprint 10 - Contrato e execução de ações locais
@@ -331,7 +333,7 @@ Milestone: M2
 
 Prioridade: P1
 
-Objetivo: gerar distribuição inicial instalável ou empacotável.
+Objetivo: gerar distribuição inicial instalável ou empacotável com identidade visual do DonAgent.
 
 #### Tarefas
 
@@ -339,7 +341,8 @@ Objetivo: gerar distribuição inicial instalável ou empacotável.
 2. Definir estratégia de pacote Linux.
 3. Gerar binários versionados.
 4. Incluir `config.example.toml`.
-5. Documentar instalação e desinstalação.
+5. Incluir `assets/logo.png` e gerar formatos/tamanhos necessários para instalador, binário instalado e notificações nativas.
+6. Documentar instalação e desinstalação.
 
 #### Critérios de aceite
 
@@ -347,6 +350,7 @@ Objetivo: gerar distribuição inicial instalável ou empacotável.
 - Artefato Linux é gerado.
 - Instalação preserva configuração local existente.
 - Desinstalação não remove logs/config sem ação explícita.
+- Instalador, agente instalado/tray e notificações do sistema operacional usam o logo do DonAgent para identificação consistente.
 
 ### Sprint 13 - TLS e credenciais
 

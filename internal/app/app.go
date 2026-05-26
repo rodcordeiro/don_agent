@@ -6,6 +6,7 @@ import (
 
 	"donagent/internal/config"
 	"donagent/internal/events"
+	"donagent/internal/notifications"
 	"donagent/internal/rabbitmq"
 )
 
@@ -30,7 +31,7 @@ func Run(ctx context.Context) error {
 	}
 	defer consumer.Close()
 
-	router := events.NewRouter(logNotificationHandler{})
+	router := events.NewRouter(notifications.NewHandler(notifications.ConsoleNotifier{}))
 
 	fmt.Printf("DonAgent started. Queue: %s\n", cfg.QueueName)
 
@@ -42,13 +43,6 @@ func Run(ctx context.Context) error {
 	}
 
 	return err
-}
-
-type logNotificationHandler struct{}
-
-func (logNotificationHandler) HandleNotification(_ context.Context, event events.Event, payload events.NotificationPayload) error {
-	fmt.Printf("Notification event received. Title: %s Origin: %s\n", payload.Title, event.Metadata.Origin)
-	return nil
 }
 
 type rabbitDelivery struct {

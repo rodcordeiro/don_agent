@@ -78,6 +78,7 @@ Entregar:
 
 - execução em segundo plano;
 - ícone/menu na system tray;
+- identidade visual do agente baseada em `assets/logo.png` aplicada ao instalador, ao agente instalado/tray e às notificações do sistema operacional;
 - ações locais controladas;
 - testes automatizados para handlers de notificação e ação;
 - CI executando testes;
