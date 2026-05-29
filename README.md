@@ -19,6 +19,20 @@ docker compose run --rm dev go build ./...
 docker compose run --rm dev go test ./...
 ```
 
+## CI
+
+GitHub Actions runs the M1 validation workflow on pushes and pull requests targeting `main` or `develop`.
+
+The workflow uses `actions/setup-go` with the Go version declared in `go.mod`, then runs:
+
+```text
+go mod download
+go test ./...
+go build ./...
+```
+
+The job runs on `ubuntu-latest` and `windows-latest` and does not require RabbitMQ or desktop notification services.
+
 ### Run the agent
 
 ```powershell
@@ -62,7 +76,7 @@ The example `rabbit_url` uses the Compose service name `rabbitmq`, which is corr
 
 ## Current scope
 
-The current implementation starts the project scaffold for Milestone 1.
+Milestone 1 is implemented as the technical MVP.
 
 Included now:
 
@@ -75,8 +89,13 @@ Included now:
 - local RabbitMQ service and initial consumer lifecycle.
 - conservative ack/nack handling after event validation and routing.
 - notification handler behind an internal notifier interface.
+- GitHub Actions build/test workflow for Linux and Windows.
 
 Not included yet:
 
 - native desktop notification library;
-- GitHub Actions build workflow.
+- tray/background execution;
+- local actions;
+- installer;
+- TLS enforcement;
+- log rotation.
