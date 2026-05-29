@@ -10,14 +10,20 @@ type NotificationHandler interface {
 	HandleNotification(context.Context, Event, NotificationPayload) error
 }
 
+// ActionHandler processes a validated action event.
+type ActionHandler interface {
+	HandleAction(context.Context, Event, ActionPayload) error
+}
+
 // Router sends validated events to the correct handler.
 type Router struct {
 	notifications NotificationHandler
+	actions       ActionHandler
 }
 
 // NewRouter creates an event router.
-func NewRouter(notifications NotificationHandler) Router {
-	return Router{notifications: notifications}
+func NewRouter(notifications NotificationHandler, actions ActionHandler) Router {
+	return Router{notifications: notifications, actions: actions}
 }
 
 // Route dispatches one parsed event.
@@ -35,9 +41,17 @@ func (router Router) Route(ctx context.Context, event Event) error {
 
 		return router.notifications.HandleNotification(ctx, event, payload)
 	case TypeAction:
-		return fmt.Errorf("%w: action events are not implemented yet", ErrUnknownEventType)
+		if router.actions == nil {
+			return fmt.Errorf("%w: action handler is required", ErrInvalidPayload)
+		}
+
+		payload, err := ParseActionPayload(event)
+		if err != nil {
+			return err
+		}
+
+		return router.actions.HandleAction(ctx, event, payload)
 	default:
 		return fmt.Errorf("%w: %q", ErrUnknownEventType, event.Event)
 	}
 }
-

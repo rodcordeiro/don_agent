@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"donagent/internal/actions"
 	"donagent/internal/config"
 	"donagent/internal/events"
 	"donagent/internal/notifications"
@@ -31,7 +32,10 @@ func Run(ctx context.Context) error {
 	}
 	defer consumer.Close()
 
-	router := events.NewRouter(notifications.NewHandler(notifications.ConsoleNotifier{}))
+	router := events.NewRouter(
+		notifications.NewHandler(notifications.ConsoleNotifier{}),
+		actions.NewHandler(actions.SystemExecutor{}, cfg.AllowedActions),
+	)
 
 	fmt.Printf("DonAgent started. Queue: %s\n", cfg.QueueName)
 

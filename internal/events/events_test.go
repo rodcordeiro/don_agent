@@ -60,10 +60,32 @@ func TestParseActionEvent(t *testing.T) {
 	if event.Event != TypeAction {
 		t.Fatalf("Event = %q", event.Event)
 	}
+
+	payload, err := ParseActionPayload(event)
+	if err != nil {
+		t.Fatalf("ParseActionPayload() error = %v", err)
+	}
+	if payload.Type != "open_url" {
+		t.Fatalf("Type = %q", payload.Type)
+	}
 }
 
 func TestParseActionWithoutPayload(t *testing.T) {
 	_, err := Parse([]byte(`{"event":"action"}`))
+	if !errors.Is(err, ErrInvalidPayload) {
+		t.Fatalf("Parse() error = %v, want ErrInvalidPayload", err)
+	}
+}
+
+func TestParseActionWithoutType(t *testing.T) {
+	_, err := Parse([]byte(`{"event":"action","payload":{"target":"https://example.com"}}`))
+	if !errors.Is(err, ErrInvalidPayload) {
+		t.Fatalf("Parse() error = %v, want ErrInvalidPayload", err)
+	}
+}
+
+func TestParseActionWithoutTarget(t *testing.T) {
+	_, err := Parse([]byte(`{"event":"action","payload":{"type":"open_url"}}`))
 	if !errors.Is(err, ErrInvalidPayload) {
 		t.Fatalf("Parse() error = %v, want ErrInvalidPayload", err)
 	}

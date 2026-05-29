@@ -74,6 +74,50 @@ Copy-Item config.example.toml $HOME/.donagent/config.toml
 
 The example `rabbit_url` uses the Compose service name `rabbitmq`, which is correct when running the agent through Docker Compose. Use `amqp://guest:guest@localhost:5672/` only when running the agent directly on the host.
 
+### Test notification event
+
+Publish this payload to the configured queue to exercise the M1 notification route:
+
+```json
+{
+  "event": "notification",
+  "payload": {
+    "title": "Build finished",
+    "description": "Pipeline completed"
+  },
+  "metadata": {
+    "created_at": "2026-05-29T12:00:00Z",
+    "author": "local",
+    "origin": "manual"
+  }
+}
+```
+
+### Local actions
+
+Milestone 2 starts with controlled semantic actions. The current supported action is `open_url`.
+
+Actions are disabled unless the local config allows them:
+
+```toml
+allowed_actions = ["open_url"]
+```
+
+Example event:
+
+```json
+{
+  "event": "action",
+  "payload": {
+    "title": "Open docs",
+    "type": "open_url",
+    "target": "https://example.com/docs"
+  }
+}
+```
+
+Only `http` and `https` URLs without embedded credentials are accepted. The executor uses OS commands directly and does not invoke a shell.
+
 ## Current scope
 
 Milestone 1 is implemented as the technical MVP.
@@ -90,12 +134,13 @@ Included now:
 - conservative ack/nack handling after event validation and routing.
 - notification handler behind an internal notifier interface.
 - GitHub Actions build/test workflow for Linux and Windows.
+- initial controlled `open_url` action handler for Milestone 2.
 
 Not included yet:
 
 - native desktop notification library;
 - tray/background execution;
-- local actions;
+- `open_app` and other local action types;
 - installer;
 - TLS enforcement;
 - log rotation.

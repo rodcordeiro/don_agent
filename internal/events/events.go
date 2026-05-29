@@ -40,6 +40,14 @@ type NotificationPayload struct {
 	ImageURL    string `json:"image_url,omitempty"`
 }
 
+// ActionPayload contains a semantic local action request.
+type ActionPayload struct {
+	Title  string   `json:"title,omitempty"`
+	Type   string   `json:"type"`
+	Target string   `json:"target"`
+	Args   []string `json:"args,omitempty"`
+}
+
 // Parse validates the event envelope and event-specific payloads.
 func Parse(data []byte) (Event, error) {
 	var event Event
@@ -54,8 +62,8 @@ func Parse(data []byte) (Event, error) {
 			return Event{}, err
 		}
 	case TypeAction:
-		if len(event.Payload) == 0 || string(event.Payload) == "null" {
-			return Event{}, fmt.Errorf("%w: action payload is required", ErrInvalidPayload)
+		if _, err := ParseActionPayload(event); err != nil {
+			return Event{}, err
 		}
 	default:
 		return Event{}, fmt.Errorf("%w: %q", ErrUnknownEventType, event.Event)
@@ -86,6 +94,37 @@ func ParseNotificationPayload(event Event) (NotificationPayload, error) {
 	return payload, nil
 }
 
+// ParseActionPayload validates and returns an action payload.
+func ParseActionPayload(event Event) (ActionPayload, error) {
+	if event.Event != TypeAction {
+		return ActionPayload{}, fmt.Errorf("%w: expected action event", ErrInvalidPayload)
+	}
+	if len(event.Payload) == 0 || string(event.Payload) == "null" {
+		return ActionPayload{}, fmt.Errorf("%w: action payload is required", ErrInvalidPayload)
+	}
+
+	var payload ActionPayload
+	if err := json.Unmarshal(event.Payload, &payload); err != nil {
+		return ActionPayload{}, fmt.Errorf("%w: %v", ErrInvalidPayload, err)
+	}
+
+	payload.Title = strings.TrimSpace(payload.Title)
+	payload.Type = strings.TrimSpace(payload.Type)
+	payload.Target = strings.TrimSpace(payload.Target)
+	for index, arg := range payload.Args {
+		payload.Args[index] = strings.TrimSpace(arg)
+	}
+
+	if payload.Type == "" {
+		return ActionPayload{}, fmt.Errorf("%w: action type is required", ErrInvalidPayload)
+	}
+	if payload.Target == "" {
+		return ActionPayload{}, fmt.Errorf("%w: action target is required", ErrInvalidPayload)
+	}
+
+	return payload, nil
+}
+
 // CreatedAtTime parses metadata creation time when present.
 func (metadata Metadata) CreatedAtTime() (time.Time, error) {
 	if strings.TrimSpace(metadata.CreatedAt) == "" {
@@ -99,4 +138,3 @@ func (metadata Metadata) CreatedAtTime() (time.Time, error) {
 
 	return createdAt, nil
 }
-

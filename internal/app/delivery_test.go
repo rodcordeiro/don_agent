@@ -11,7 +11,19 @@ import (
 
 func TestProcessDeliveryAcksAfterSuccessfulProcessing(t *testing.T) {
 	msg := &deliverySpy{body: []byte(`{"event":"notification","payload":{"title":"Hello"}}`)}
-	router := events.NewRouter(notificationHandler{})
+	router := events.NewRouter(notificationHandler{}, nil)
+
+	if err := processDelivery(context.Background(), router, msg); err != nil {
+		t.Fatalf("processDelivery() error = %v", err)
+	}
+	if !msg.acked {
+		t.Fatal("message was not acked")
+	}
+}
+
+func TestProcessDeliveryAcksAfterSuccessfulAction(t *testing.T) {
+	msg := &deliverySpy{body: []byte(`{"event":"action","payload":{"type":"open_url","target":"https://example.com"}}`)}
+	router := events.NewRouter(notificationHandler{}, actionHandler{})
 
 	if err := processDelivery(context.Background(), router, msg); err != nil {
 		t.Fatalf("processDelivery() error = %v", err)
@@ -23,7 +35,7 @@ func TestProcessDeliveryAcksAfterSuccessfulProcessing(t *testing.T) {
 
 func TestProcessDeliveryRejectsInvalidJSON(t *testing.T) {
 	msg := &deliverySpy{body: []byte(`{"event":`)}
-	router := events.NewRouter(notificationHandler{})
+	router := events.NewRouter(notificationHandler{}, nil)
 
 	if err := processDelivery(context.Background(), router, msg); err != nil {
 		t.Fatalf("processDelivery() error = %v", err)
@@ -35,7 +47,7 @@ func TestProcessDeliveryRejectsInvalidJSON(t *testing.T) {
 
 func TestProcessDeliveryRejectsUnknownEvent(t *testing.T) {
 	msg := &deliverySpy{body: []byte(`{"event":"unknown","payload":{}}`)}
-	router := events.NewRouter(notificationHandler{})
+	router := events.NewRouter(notificationHandler{}, nil)
 
 	if err := processDelivery(context.Background(), router, msg); err != nil {
 		t.Fatalf("processDelivery() error = %v", err)
@@ -47,7 +59,7 @@ func TestProcessDeliveryRejectsUnknownEvent(t *testing.T) {
 
 func TestProcessDeliveryRejectsInvalidPayload(t *testing.T) {
 	msg := &deliverySpy{body: []byte(`{"event":"notification","payload":{"description":"missing title"}}`)}
-	router := events.NewRouter(notificationHandler{})
+	router := events.NewRouter(notificationHandler{}, nil)
 
 	if err := processDelivery(context.Background(), router, msg); err != nil {
 		t.Fatalf("processDelivery() error = %v", err)
@@ -59,7 +71,7 @@ func TestProcessDeliveryRejectsInvalidPayload(t *testing.T) {
 
 func TestProcessDeliveryNacksTemporaryError(t *testing.T) {
 	msg := &deliverySpy{body: []byte(`{"event":"notification","payload":{"title":"Hello"}}`)}
-	router := events.NewRouter(notificationHandler{err: ErrTemporaryProcessing})
+	router := events.NewRouter(notificationHandler{err: ErrTemporaryProcessing}, nil)
 
 	if err := processDelivery(context.Background(), router, msg); err != nil {
 		t.Fatalf("processDelivery() error = %v", err)
@@ -71,7 +83,7 @@ func TestProcessDeliveryNacksTemporaryError(t *testing.T) {
 
 func TestProcessDeliveryRejectsPermanentProcessingError(t *testing.T) {
 	msg := &deliverySpy{body: []byte(`{"event":"notification","payload":{"title":"Hello"}}`)}
-	router := events.NewRouter(notificationHandler{err: errors.New("permanent failure")})
+	router := events.NewRouter(notificationHandler{err: errors.New("permanent failure")}, nil)
 
 	if err := processDelivery(context.Background(), router, msg); err != nil {
 		t.Fatalf("processDelivery() error = %v", err)
@@ -125,5 +137,13 @@ type notificationHandler struct {
 }
 
 func (handler notificationHandler) HandleNotification(_ context.Context, _ events.Event, _ events.NotificationPayload) error {
+	return handler.err
+}
+
+type actionHandler struct {
+	err error
+}
+
+func (handler actionHandler) HandleAction(_ context.Context, _ events.Event, _ events.ActionPayload) error {
 	return handler.err
 }
