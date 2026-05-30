@@ -157,6 +157,22 @@ Example `open_app` event:
 
 `open_app` accepts only aliases configured locally in `app_aliases`. Event arguments are rejected for now, so the queue cannot provide free command-line parameters.
 
+### Portable packages
+
+Milestone 2 includes an initial portable packaging path for Windows and Linux:
+
+```powershell
+.\scripts\package-portable.ps1 -Version dev -Builder docker -Clean
+```
+
+On Linux or POSIX shells:
+
+```sh
+VERSION=dev BUILDER=docker CLEAN=1 ./scripts/package-portable.sh
+```
+
+The scripts create archives under `dist/` with the binary, `config.example.toml` and `assets/logo.png`. They do not install, uninstall, configure auto-start or sign artifacts.
+
 ## Current scope
 
 Milestone 1 is implemented as the technical MVP.
@@ -174,6 +190,7 @@ Included now:
 - notification handler behind an internal notifier interface.
 - GitHub Actions build/test workflow for Linux and Windows.
 - initial controlled `open_url` and `open_app` action handlers for Milestone 2.
+- initial portable packaging scripts for Windows and Linux.
 
 Not included yet:
 
@@ -181,5 +198,6 @@ Not included yet:
 - tray/background execution;
 - other local action types;
 - installer;
+- native installer;
 - TLS enforcement;
 - log rotation.
