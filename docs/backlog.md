@@ -408,6 +408,12 @@ Prioridade: P0
 
 Objetivo: corrigir riscos de exposição acidental identificados em revisão Sentinel antes de ampliar uso operacional.
 
+#### Regra operacional específica
+
+- Antes da execução, Sentinel deve revisar novamente o projeto para confirmar riscos, escopo e prioridades de segurança.
+- PM deve auxiliar na estruturação do backlog interno da sprint, quebrando achados em tarefas executáveis e critérios de aceite.
+- Esta sprint é exceção à premissa geral de limite máximo de 5 tarefas, porque pode consolidar múltiplos achados de segurança relacionados.
+
 #### Tarefas
 
 1. Restringir portas do RabbitMQ local no `docker-compose.yml` para bind em `127.0.0.1`.
