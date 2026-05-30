@@ -400,7 +400,31 @@ Objetivo: endurecer comunicação e tratamento de segredos.
 - Segredos não aparecem em logs.
 - Fallback inseguro não ocorre silenciosamente.
 
-### Sprint 15 - Allowlist e segurança de ações
+### Sprint 15 - Higiene de exposição e dados sensíveis
+
+Milestone: M3
+
+Prioridade: P0
+
+Objetivo: corrigir riscos de exposição acidental identificados em revisão Sentinel antes de ampliar uso operacional.
+
+#### Tarefas
+
+1. Restringir portas do RabbitMQ local no `docker-compose.yml` para bind em `127.0.0.1`.
+2. Adicionar ignores preventivos para logs e configurações locais, como `*.log`, `events.log`, `config.toml` e `*.local.toml`.
+3. Evitar saída bruta de `title`, `description` e `image_url` em console/logs operacionais.
+4. Sanitizar ou truncar URLs e campos potencialmente sensíveis antes de registrar falhas.
+5. Documentar que `guest/guest` existe apenas para ambiente local de desenvolvimento.
+
+#### Critérios de aceite
+
+- RabbitMQ local não fica exposto fora de loopback por padrão.
+- Logs e configs locais comuns não aparecem como arquivos versionáveis por acidente.
+- Conteúdo bruto de notificação não é impresso em logs operacionais.
+- URLs com credenciais, tokens ou parâmetros sensíveis são mascaradas ou truncadas.
+- Exemplos `guest/guest` continuam claramente marcados como credenciais locais, não produção.
+
+### Sprint 16 - Allowlist e segurança de ações
 
 Milestone: M3
 
@@ -423,7 +447,7 @@ Objetivo: impedir execução maliciosa por eventos remotos.
 - Payload suspeito é rejeitado.
 - Rejeições são registradas com motivo sanitizado.
 
-### Sprint 16 - Logging estruturado e rotação
+### Sprint 17 - Logging estruturado e rotação
 
 Milestone: M3
 
@@ -446,7 +470,7 @@ Objetivo: criar trilha auditável local.
 - Erros são sanitizados.
 - Teste cobre rotação com limite reduzido.
 
-### Sprint 17 - Versionamento do contrato
+### Sprint 18 - Versionamento do contrato
 
 Milestone: M4
 
@@ -469,7 +493,7 @@ Objetivo: controlar evolução do contrato de eventos.
 - Política de compatibilidade está documentada.
 - Produtores têm guia de migração.
 
-### Sprint 18 - Auto-start e single instance
+### Sprint 19 - Auto-start e single instance
 
 Milestone: M4
 
@@ -492,7 +516,7 @@ Objetivo: permitir inicialização automática controlada.
 - Segunda instância não consome fila em paralelo.
 - Comportamento por sistema operacional está documentado.
 
-### Sprint 19 - Auto-update e release operacional
+### Sprint 20 - Auto-update e release operacional
 
 Milestone: M4
 
