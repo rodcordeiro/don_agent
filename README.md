@@ -189,13 +189,14 @@ Included now:
 - conservative ack/nack handling after event validation and routing.
 - notification handler behind an internal notifier interface.
 - GitHub Actions build/test workflow for Linux and Windows.
+- resident controller for status, pause, resume and graceful stop.
 - initial controlled `open_url` and `open_app` action handlers for Milestone 2.
 - initial portable packaging scripts for Windows and Linux.
 
 Not included yet:
 
 - native desktop notification library;
-- tray/background execution;
+- native tray menu UI;
 - other local action types;
 - installer;
 - native installer;

@@ -59,6 +59,12 @@ func NewConsumer(cfg Config) (*Consumer, error) {
 		return nil, fmt.Errorf("declare queue %q: %w", cfg.QueueName, err)
 	}
 
+	if err := channel.Qos(1, 0, false); err != nil {
+		_ = channel.Close()
+		_ = conn.Close()
+		return nil, fmt.Errorf("configure queue prefetch: %w", err)
+	}
+
 	return &Consumer{
 		conn:    conn,
 		channel: channel,

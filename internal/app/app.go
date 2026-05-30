@@ -9,6 +9,7 @@ import (
 	"donagent/internal/events"
 	"donagent/internal/notifications"
 	"donagent/internal/rabbitmq"
+	"donagent/internal/tray"
 )
 
 // Run starts the DonAgent application lifecycle.
@@ -22,6 +23,21 @@ func Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	resident := tray.NewController(tray.Config{
+		AppName:  "DonAgent",
+		IconPath: "assets/logo.png",
+	})
+	runCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	go func() {
+		select {
+		case <-resident.Done():
+			cancel()
+		case <-runCtx.Done():
+		}
+	}()
 
 	consumer, err := rabbitmq.NewConsumer(rabbitmq.Config{
 		URL:       cfg.RabbitURL,
@@ -37,9 +53,15 @@ func Run(ctx context.Context) error {
 		actions.NewHandler(actions.SystemExecutor{}, cfg.AllowedActions, cfg.AppAliases),
 	)
 
-	fmt.Printf("DonAgent started. Queue: %s\n", cfg.QueueName)
+	resident.SetStatus(tray.StatusRunning)
+	defer resident.SetStatus(tray.StatusStopped)
 
-	err = consumer.Consume(ctx, func(ctx context.Context, delivery rabbitmq.Delivery) error {
+	fmt.Printf("DonAgent started. Queue: %s. Status: %s\n", cfg.QueueName, resident.Status())
+
+	err = consumer.Consume(runCtx, func(ctx context.Context, delivery rabbitmq.Delivery) error {
+		if err := resident.WaitIfPaused(ctx); err != nil {
+			return err
+		}
 		return processDelivery(ctx, router, rabbitDelivery{delivery: delivery})
 	})
 	if err == context.Canceled {
