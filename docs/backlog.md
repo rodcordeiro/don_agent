@@ -327,7 +327,32 @@ Objetivo: cobrir handlers e contratos sem depender do desktop real.
 - Testes não dependem de RabbitMQ externo.
 - Testes não dependem de tray ou desktop real.
 
-### Sprint 12 - Instalador inicial
+### Sprint 12 - Release portátil via GitHub Actions
+
+Milestone: M2
+
+Prioridade: P1
+
+Objetivo: gerar artefatos portáteis baixáveis no GitHub Actions antes do instalador nativo.
+
+#### Tarefas
+
+1. Criar workflow GitHub Actions para release portátil.
+2. Reaproveitar `scripts/package-portable.ps1` ou fluxo equivalente no CI.
+3. Gerar pacote Windows `donagent-<version>-windows-amd64.zip`.
+4. Gerar pacote Linux `donagent-<version>-linux-amd64.tar.gz`.
+5. Publicar artefatos do workflow contendo binário, `config.example.toml` e `assets/logo.png`.
+
+#### Critérios de aceite
+
+- Workflow pode ser disparado manualmente por `workflow_dispatch`.
+- Artefatos Windows e Linux ficam disponíveis para download no GitHub Actions.
+- Workflow executa testes antes de empacotar.
+- Artefatos incluem `config.example.toml` e `assets/logo.png`.
+- Workflow não promete instalação, auto-start, assinatura, auto-update ou uninstall.
+- Falha de build/test impede publicação dos artefatos.
+
+### Sprint 13 - Instalador inicial
 
 Milestone: M2
 
@@ -352,7 +377,7 @@ Objetivo: gerar distribuição inicial instalável ou empacotável com identidad
 - Desinstalação não remove logs/config sem ação explícita.
 - Instalador, agente instalado/tray e notificações do sistema operacional usam o logo do DonAgent para identificação consistente.
 
-### Sprint 13 - TLS e credenciais
+### Sprint 14 - TLS e credenciais
 
 Milestone: M3
 
@@ -375,7 +400,7 @@ Objetivo: endurecer comunicação e tratamento de segredos.
 - Segredos não aparecem em logs.
 - Fallback inseguro não ocorre silenciosamente.
 
-### Sprint 14 - Allowlist e segurança de ações
+### Sprint 15 - Allowlist e segurança de ações
 
 Milestone: M3
 
@@ -398,7 +423,7 @@ Objetivo: impedir execução maliciosa por eventos remotos.
 - Payload suspeito é rejeitado.
 - Rejeições são registradas com motivo sanitizado.
 
-### Sprint 15 - Logging estruturado e rotação
+### Sprint 16 - Logging estruturado e rotação
 
 Milestone: M3
 
@@ -421,7 +446,7 @@ Objetivo: criar trilha auditável local.
 - Erros são sanitizados.
 - Teste cobre rotação com limite reduzido.
 
-### Sprint 16 - Versionamento do contrato
+### Sprint 17 - Versionamento do contrato
 
 Milestone: M4
 
@@ -444,7 +469,7 @@ Objetivo: controlar evolução do contrato de eventos.
 - Política de compatibilidade está documentada.
 - Produtores têm guia de migração.
 
-### Sprint 17 - Auto-start e single instance
+### Sprint 18 - Auto-start e single instance
 
 Milestone: M4
 
@@ -467,7 +492,7 @@ Objetivo: permitir inicialização automática controlada.
 - Segunda instância não consome fila em paralelo.
 - Comportamento por sistema operacional está documentado.
 
-### Sprint 18 - Auto-update e release operacional
+### Sprint 19 - Auto-update e release operacional
 
 Milestone: M4
 
