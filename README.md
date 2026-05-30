@@ -19,6 +19,29 @@ docker compose run --rm dev go build ./...
 docker compose run --rm dev go test ./...
 ```
 
+### Portable packaging
+
+Initial Milestone 2 portable packages can be generated without changing product code:
+
+```powershell
+.\scripts\package-portable.ps1 -Version dev -Builder docker
+```
+
+On Linux or POSIX shells:
+
+```sh
+VERSION=dev BUILDER=docker ./scripts/package-portable.sh
+```
+
+The scripts cross-compile `windows/amd64` and `linux/amd64`, then create:
+
+```text
+dist/donagent-<version>-windows-amd64.zip
+dist/donagent-<version>-linux-amd64.tar.gz
+```
+
+Each artifact contains the platform binary, `config.example.toml` and `assets/logo.png`.
+
 ## CI
 
 GitHub Actions runs the M1 validation workflow on pushes and pull requests targeting `main` or `develop`.
@@ -95,15 +118,16 @@ Publish this payload to the configured queue to exercise the M1 notification rou
 
 ### Local actions
 
-Milestone 2 starts with controlled semantic actions. The current supported action is `open_url`.
+Milestone 2 starts with controlled semantic actions. The current supported actions are `open_url` and `open_app`.
 
 Actions are disabled unless the local config allows them:
 
 ```toml
-allowed_actions = ["open_url"]
+allowed_actions = ["open_url", "open_app"]
+app_aliases = ["editor=/usr/bin/nano"]
 ```
 
-Example event:
+Example `open_url` event:
 
 ```json
 {
@@ -117,6 +141,21 @@ Example event:
 ```
 
 Only `http` and `https` URLs without embedded credentials are accepted. The executor uses OS commands directly and does not invoke a shell.
+
+Example `open_app` event:
+
+```json
+{
+  "event": "action",
+  "payload": {
+    "title": "Open editor",
+    "type": "open_app",
+    "target": "editor"
+  }
+}
+```
+
+`open_app` accepts only aliases configured locally in `app_aliases`. Event arguments are rejected for now, so the queue cannot provide free command-line parameters.
 
 ## Current scope
 
@@ -134,13 +173,13 @@ Included now:
 - conservative ack/nack handling after event validation and routing.
 - notification handler behind an internal notifier interface.
 - GitHub Actions build/test workflow for Linux and Windows.
-- initial controlled `open_url` action handler for Milestone 2.
+- initial controlled `open_url` and `open_app` action handlers for Milestone 2.
 
 Not included yet:
 
 - native desktop notification library;
 - tray/background execution;
-- `open_app` and other local action types;
+- other local action types;
 - installer;
 - TLS enforcement;
 - log rotation.

@@ -15,6 +15,8 @@ func (SystemExecutor) Execute(ctx context.Context, request Request) error {
 	switch request.Type {
 	case TypeOpenURL:
 		return exec.CommandContext(ctx, "rundll32", "url.dll,FileProtocolHandler", request.Target).Start()
+	case TypeOpenApp:
+		return exec.CommandContext(ctx, request.Target).Start()
 	default:
 		return nil
 	}

@@ -8,3 +8,4 @@ log_path = "$HOME/.donagent/events.log"
 log_max_size_mb = 10
 tls_enabled = false
 allowed_actions = []
+app_aliases = []

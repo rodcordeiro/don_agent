@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -13,7 +14,10 @@ import (
 const (
 	defaultContractVersion = "1"
 	defaultLogMaxSizeMB    = 10
+	actionOpenApp          = "open_app"
 )
+
+var appAliasPattern = regexp.MustCompile(`^[A-Za-z0-9_.-]{1,64}$`)
 
 // Config holds DonAgent runtime settings loaded from the local config file.
 type Config struct {
@@ -27,6 +31,7 @@ type Config struct {
 	LogMaxSizeMB         int
 	TLSEnabled           bool
 	AllowedActions       []string
+	AppAliases           map[string]string
 }
 
 // DefaultPath returns the default config path under the user home directory.
@@ -57,6 +62,12 @@ func Load(path string) (Config, error) {
 		LogMaxSizeMB:         defaultLogMaxSizeMB,
 		AllowedActions:       parseStringList(values["allowed_actions"]),
 	}
+
+	appAliases, err := parseStringMap(values["app_aliases"])
+	if err != nil {
+		return Config{}, err
+	}
+	cfg.AppAliases = appAliases
 
 	if raw := values["log_max_size_mb"]; raw != "" {
 		size, err := strconv.Atoi(raw)
@@ -99,6 +110,9 @@ func (cfg Config) Validate() error {
 	}
 	if cfg.LogMaxSizeMB <= 0 {
 		return errors.New("log_max_size_mb must be greater than zero")
+	}
+	if len(cfg.AppAliases) > 0 && !contains(cfg.AllowedActions, actionOpenApp) {
+		return errors.New("app_aliases requires open_app in allowed_actions")
 	}
 
 	return nil
@@ -162,6 +176,77 @@ func parseStringList(value string) []string {
 	}
 
 	return items
+}
+
+func parseStringMap(value string) (map[string]string, error) {
+	items := parseStringList(value)
+	if len(items) == 0 {
+		return nil, nil
+	}
+
+	values := make(map[string]string, len(items))
+	for _, item := range items {
+		key, value, ok := strings.Cut(item, "=")
+		if !ok {
+			return nil, fmt.Errorf("invalid app_aliases item %q", item)
+		}
+
+		key = strings.TrimSpace(key)
+		value = strings.TrimSpace(value)
+		if err := validateAppAlias(key); err != nil {
+			return nil, err
+		}
+		if _, exists := values[key]; exists {
+			return nil, fmt.Errorf("duplicate app alias %q", key)
+		}
+
+		target, err := validateAppTarget(value)
+		if err != nil {
+			return nil, fmt.Errorf("invalid app alias %q: %w", key, err)
+		}
+		values[key] = target
+	}
+
+	return values, nil
+}
+
+func validateAppAlias(alias string) error {
+	if !appAliasPattern.MatchString(alias) {
+		return fmt.Errorf("invalid app alias %q", alias)
+	}
+	if alias == "." || alias == ".." || strings.Contains(alias, "..") {
+		return fmt.Errorf("invalid app alias %q", alias)
+	}
+
+	return nil
+}
+
+func validateAppTarget(value string) (string, error) {
+	if strings.TrimSpace(value) == "" {
+		return "", errors.New("target is required")
+	}
+
+	value = filepath.Clean(expandPath(value))
+	if !filepath.IsAbs(value) {
+		return "", errors.New("target must be an absolute path")
+	}
+
+	switch strings.ToLower(filepath.Ext(value)) {
+	case ".bat", ".cmd", ".ps1", ".vbs", ".js", ".wsf":
+		return "", errors.New("script targets are not allowed")
+	}
+
+	return value, nil
+}
+
+func contains(items []string, want string) bool {
+	for _, item := range items {
+		if item == want {
+			return true
+		}
+	}
+
+	return false
 }
 
 func defaultString(value, fallback string) string {

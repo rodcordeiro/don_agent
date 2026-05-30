@@ -10,7 +10,7 @@ import (
 
 func TestHandlerExecutesAllowedOpenURL(t *testing.T) {
 	executor := &executorSpy{}
-	handler := NewHandler(executor, []string{TypeOpenURL})
+	handler := NewHandler(executor, []string{TypeOpenURL}, nil)
 
 	err := handler.HandleAction(context.Background(), events.Event{}, events.ActionPayload{
 		Title:  "Open docs",
@@ -30,7 +30,7 @@ func TestHandlerExecutesAllowedOpenURL(t *testing.T) {
 
 func TestHandlerRejectsActionOutsideAllowlist(t *testing.T) {
 	executor := &executorSpy{}
-	handler := NewHandler(executor, nil)
+	handler := NewHandler(executor, nil, nil)
 
 	err := handler.HandleAction(context.Background(), events.Event{}, events.ActionPayload{
 		Type:   TypeOpenURL,
@@ -46,10 +46,10 @@ func TestHandlerRejectsActionOutsideAllowlist(t *testing.T) {
 
 func TestHandlerRejectsUnsupportedActionType(t *testing.T) {
 	executor := &executorSpy{}
-	handler := NewHandler(executor, []string{"open_app"})
+	handler := NewHandler(executor, []string{"run_command"}, nil)
 
 	err := handler.HandleAction(context.Background(), events.Event{}, events.ActionPayload{
-		Type:   "open_app",
+		Type:   "run_command",
 		Target: "notepad",
 	})
 	if err == nil {
@@ -73,7 +73,7 @@ func TestHandlerRejectsUnsafeURL(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			executor := &executorSpy{}
-			handler := NewHandler(executor, []string{TypeOpenURL})
+			handler := NewHandler(executor, []string{TypeOpenURL}, nil)
 
 			err := handler.HandleAction(context.Background(), events.Event{}, events.ActionPayload{
 				Type:   TypeOpenURL,
@@ -90,7 +90,7 @@ func TestHandlerRejectsUnsafeURL(t *testing.T) {
 }
 
 func TestHandlerRequiresExecutor(t *testing.T) {
-	handler := NewHandler(nil, []string{TypeOpenURL})
+	handler := NewHandler(nil, []string{TypeOpenURL}, nil)
 
 	err := handler.HandleAction(context.Background(), events.Event{}, events.ActionPayload{
 		Type:   TypeOpenURL,
@@ -98,6 +98,82 @@ func TestHandlerRequiresExecutor(t *testing.T) {
 	})
 	if err == nil || !strings.Contains(err.Error(), "executor") {
 		t.Fatalf("HandleAction() error = %v", err)
+	}
+}
+
+func TestHandlerExecutesConfiguredOpenAppAlias(t *testing.T) {
+	executor := &executorSpy{}
+	handler := NewHandler(executor, []string{TypeOpenApp}, map[string]string{
+		"editor": "/usr/bin/nano",
+	})
+
+	err := handler.HandleAction(context.Background(), events.Event{}, events.ActionPayload{
+		Type:   TypeOpenApp,
+		Target: "editor",
+	})
+	if err != nil {
+		t.Fatalf("HandleAction() error = %v", err)
+	}
+	if !executor.called {
+		t.Fatal("executor was not called")
+	}
+	if executor.request.Target != "/usr/bin/nano" {
+		t.Fatalf("Target = %q", executor.request.Target)
+	}
+}
+
+func TestHandlerRejectsUnknownOpenAppAlias(t *testing.T) {
+	executor := &executorSpy{}
+	handler := NewHandler(executor, []string{TypeOpenApp}, map[string]string{
+		"editor": "/usr/bin/nano",
+	})
+
+	err := handler.HandleAction(context.Background(), events.Event{}, events.ActionPayload{
+		Type:   TypeOpenApp,
+		Target: "browser",
+	})
+	if err == nil {
+		t.Fatal("HandleAction() error = nil")
+	}
+	if executor.called {
+		t.Fatal("executor was called")
+	}
+}
+
+func TestHandlerRejectsInvalidOpenAppAlias(t *testing.T) {
+	executor := &executorSpy{}
+	handler := NewHandler(executor, []string{TypeOpenApp}, map[string]string{
+		"../editor": "/usr/bin/nano",
+	})
+
+	err := handler.HandleAction(context.Background(), events.Event{}, events.ActionPayload{
+		Type:   TypeOpenApp,
+		Target: "../editor",
+	})
+	if err == nil {
+		t.Fatal("HandleAction() error = nil")
+	}
+	if executor.called {
+		t.Fatal("executor was called")
+	}
+}
+
+func TestHandlerRejectsArgs(t *testing.T) {
+	executor := &executorSpy{}
+	handler := NewHandler(executor, []string{TypeOpenApp}, map[string]string{
+		"editor": "/usr/bin/nano",
+	})
+
+	err := handler.HandleAction(context.Background(), events.Event{}, events.ActionPayload{
+		Type:   TypeOpenApp,
+		Target: "editor",
+		Args:   []string{"file.txt"},
+	})
+	if err == nil {
+		t.Fatal("HandleAction() error = nil")
+	}
+	if executor.called {
+		t.Fatal("executor was called")
 	}
 }
 

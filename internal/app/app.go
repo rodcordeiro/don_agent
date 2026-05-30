@@ -34,7 +34,7 @@ func Run(ctx context.Context) error {
 
 	router := events.NewRouter(
 		notifications.NewHandler(notifications.ConsoleNotifier{}),
-		actions.NewHandler(actions.SystemExecutor{}, cfg.AllowedActions),
+		actions.NewHandler(actions.SystemExecutor{}, cfg.AllowedActions, cfg.AppAliases),
 	)
 
 	fmt.Printf("DonAgent started. Queue: %s\n", cfg.QueueName)
